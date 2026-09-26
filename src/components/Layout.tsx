@@ -6,6 +6,7 @@ import { hasRole, Roles } from '../auth/roles';
 import cx from '../lib/cx';
 import { buttonClass } from '../lib/styles';
 import SignInButtons from './SignInButtons';
+import ThemeToggle from './ThemeToggle';
 import Container from './ui/Container';
 
 function navLinkClass({ isActive }: { isActive: boolean }): string {
@@ -55,6 +56,7 @@ export default function Layout() {
             ) : null}
           </nav>
 
+          <ThemeToggle />
           {user ? (
             <div className="flex items-center gap-2">
               <span

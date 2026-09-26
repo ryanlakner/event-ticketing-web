@@ -30,7 +30,7 @@ The React front end for [event-ticketing-api](https://github.com/ryanlakner/even
 - **My events** lets an organizer create drafts, publish them, and cancel events.
 - Navigation and pages adapt to the signed-in user's roles. That's for convenience only: the API enforces every rule itself.
 - API errors appear as their problem-details message, and validation errors show next to the field they belong to.
-- Light and dark themes follow the operating system. Layouts adapt from phones to desktops, with loading skeletons and empty states throughout.
+- Light and dark themes follow the operating system, or pick one from the header. Layouts adapt from phones to desktops, with loading skeletons and empty states throughout.
 
 ## Getting started
 

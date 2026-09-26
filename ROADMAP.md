@@ -28,7 +28,7 @@ Sizes: **S** is an evening, **M** is a few sessions, and **L** is worth splittin
     - [ ] Like the API, the workflow is skipped until the environment is configured.
 
 - [ ] **SPA fallback and security headers** · `feat` · S
-  - _Done when:_ `staticwebapp.config.json` rewrites unknown paths to `index.html` and sets a Content Security Policy. The policy allows the API origin and `login.microsoftonline.com`, sets `frame-ancestors 'none'`, and turns on HSTS.
+  - _Done when:_ `staticwebapp.config.json` rewrites unknown paths to `index.html` and sets a Content Security Policy. The policy allows the API origin and `login.microsoftonline.com`, sets `frame-ancestors 'none'`, and turns on HSTS. The theme script in `index.html` is inline, so the policy needs its hash.
 
 - [ ] **Automated releases** · `ci` · S
   - _Done when:_ release-please turns Conventional Commits into version bumps, `CHANGELOG.md` entries, and GitHub Releases.
@@ -64,8 +64,8 @@ Sizes: **S** is an evening, **M** is a few sessions, and **L** is worth splittin
 - [x] **Toast confirmations** · `feat` · S
   - _Done:_ publishing, cancelling, creating, reserving, and confirming show a brief toast, and failed list actions show the problem detail in an error toast. Toasts live in always-present polite and assertive live regions, so screen readers announce them. Form and page errors stay inline, next to what they're about.
 
-- [ ] **Theme switcher** · `feat` · S
-  - _Done when:_ a header control switches between system, light, and dark. The choice is remembered in `localStorage`, and there's no flash of the wrong theme on load.
+- [x] **Theme switcher** · `feat` · S
+  - _Done:_ a header button cycles system → light → dark. The choice is saved in `localStorage`, "system" keeps following OS changes, and an inline script in `index.html` applies the theme before first paint, so there's no flash.
 
 - [ ] **Start time required by the API itself** · `fix` (event-ticketing-api) · S
   - _Why:_ an empty start time fails JSON binding before validation, so the API answers with a technical `$.startsAt` message. The form now catches it first.
