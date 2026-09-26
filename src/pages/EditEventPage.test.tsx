@@ -35,7 +35,8 @@ describe('EditEventPage', () => {
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
 
     expect(await screen.findByText('Saved changes to “Jazz Night: Encore”.')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'My events' })).toBeInTheDocument();
+    // My events is lazy-loaded, so wait for it rather than assuming it has rendered.
+    expect(await screen.findByRole('heading', { name: 'My events' })).toBeInTheDocument();
     expect(body).toMatchObject({ name: 'Jazz Night: Encore', venue: 'Grand Hall', capacity: 150 });
     expect(body?.startsAt).toBe(event.startsAt);
   });
