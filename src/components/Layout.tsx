@@ -1,4 +1,5 @@
 import { LogOut, Ticket } from 'lucide-react';
+import { Suspense } from 'react';
 import { NavLink, Outlet } from 'react-router';
 
 import { useAuth } from '../auth/AuthContext';
@@ -6,6 +7,7 @@ import { hasRole, Roles } from '../auth/roles';
 import cx from '../lib/cx';
 import { buttonClass } from '../lib/styles';
 import SignInButtons from './SignInButtons';
+import { ListSkeleton } from './Skeletons';
 import ThemeToggle from './ThemeToggle';
 import Container from './ui/Container';
 
@@ -86,7 +88,16 @@ export default function Layout() {
       </header>
 
       <main className="flex-1 pb-16">
-        <Outlet />
+        <Suspense
+          fallback={
+            <Container className="pt-10">
+              <ListSkeleton />
+              <p className="sr-only">Loading page…</p>
+            </Container>
+          }
+        >
+          <Outlet />
+        </Suspense>
       </main>
 
       <footer className="border-t border-line py-6 text-sm text-ink-muted">

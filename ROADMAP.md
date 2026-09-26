@@ -71,8 +71,8 @@ Sizes: **S** is an evening, **M** is a few sessions, and **L** is worth splittin
   - _Why:_ an empty start time fails JSON binding before validation, so the API answers with a technical `$.startsAt` message. The form now catches it first.
   - _Done when:_ `EventRequest.StartsAt` is nullable and FluentValidation reports "'Starts At' must not be empty."
 
-- [ ] **Route-level code splitting** · `perf` · S
-  - _Done when:_ organizer pages load lazily, so customers never download them, and the build reports the chunk sizes.
+- [x] **Route-level code splitting** · `perf` · S
+  - _Done:_ My events, New event, and Edit event load lazily behind a Suspense boundary with a skeleton, so customers never download them. The organizer chunks total about 5 kB gzipped, and `npm run build` lists every chunk's size.
 
 ## Housekeeping to watch
 
