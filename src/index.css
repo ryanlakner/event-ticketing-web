@@ -2,9 +2,15 @@
 @import '@fontsource-variable/inter';
 
 /*
- * Semantic colors that switch between light and dark (following the OS setting), exposed to
- * Tailwind as bg-canvas, bg-surface, text-ink, border-line, and so on. Brand accents use
- * Tailwind's violet and fuchsia palettes directly.
+ * The theme comes from data-theme on <html>, set before first paint by the script in index.html
+ * and afterwards by the theme switcher (src/lib/theme.ts). Tailwind's dark: variant follows it.
+ */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/*
+ * Semantic colors that switch between light and dark, exposed to Tailwind as bg-canvas,
+ * bg-surface, text-ink, border-line, and so on. Brand accents use Tailwind's violet and fuchsia
+ * palettes directly.
  */
 :root {
   --canvas: #f6f5fb;
@@ -16,16 +22,14 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --canvas: #0b0a11;
-    --surface: #15141e;
-    --surface-muted: #201e2c;
-    --line: #2b2939;
-    --ink: #f3f2f8;
-    --ink-muted: #a29eb4;
-    color-scheme: dark;
-  }
+:root[data-theme='dark'] {
+  --canvas: #0b0a11;
+  --surface: #15141e;
+  --surface-muted: #201e2c;
+  --line: #2b2939;
+  --ink: #f3f2f8;
+  --ink-muted: #a29eb4;
+  color-scheme: dark;
 }
 
 @theme inline {

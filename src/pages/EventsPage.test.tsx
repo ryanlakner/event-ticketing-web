@@ -66,3 +66,34 @@ describe('EventsPage', () => {
     );
   });
 });
+
+describe('EventsPage paging', () => {
+  it('pages through events', async () => {
+    const pagesRequested: (string | null)[] = [];
+    server.use(
+      http.get(`${apiUrl}/api/events`, ({ request }) => {
+        const page = new URL(request.url).searchParams.get('page');
+        pagesRequested.push(page);
+        const name = page === '2' ? 'Second page event' : 'First page event';
+        return HttpResponse.json({
+          ...paged([makeEvent({ id: `e${page}`, name })]),
+          page: Number(page),
+          totalCount: 10,
+          totalPages: 2,
+        });
+      }),
+    );
+    const { user } = renderApp('/');
+
+    expect(await screen.findByText('First page event')).toBeInTheDocument();
+    expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Next' }));
+
+    expect(await screen.findByText('Second page event')).toBeInTheDocument();
+    expect(screen.getByText('Page 2 of 2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    expect(pagesRequested).toEqual(['1', '2']);
+  });
+});

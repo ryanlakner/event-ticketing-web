@@ -27,10 +27,12 @@ The React front end for [event-ticketing-api](https://github.com/ryanlakner/even
 - **Browse** published events, with search and live seat availability. No sign-in needed.
 - **Reserve** seats as a customer. The reservation page counts down the 10-minute hold and offers confirm and cancel.
 - **My tickets** lists a customer's reservations, soonest event first.
-- **My events** lets an organizer create drafts, publish them, and cancel events.
+- **My events** lets an organizer create, edit, publish, and cancel events, with live, draft, and seats-sold stats.
+- Lists page through results and filter by status, with the page and filter kept in the URL.
+- Actions confirm with toasts, and destructive ones (cancelling an event or reservation) ask first in an accessible dialog.
 - Navigation and pages adapt to the signed-in user's roles. That's for convenience only: the API enforces every rule itself.
 - API errors appear as their problem-details message, and validation errors show next to the field they belong to.
-- Light and dark themes follow the operating system. Layouts adapt from phones to desktops, with loading skeletons and empty states throughout.
+- Light and dark themes follow the operating system, or pick one from the header. Organizer pages load on demand, so customers never download them. Layouts adapt from phones to desktops, with loading skeletons and empty states throughout.
 
 ## Getting started
 

@@ -1,17 +1,22 @@
-import { CalendarPlus, Plus } from 'lucide-react';
+import { CalendarPlus, Pencil, Plus } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { useCancelEvent, useMyEvents, usePublishEvent } from '../api/queries';
-import type { EventDto } from '../api/types';
+import type { EventDto, EventStatus } from '../api/types';
 import AvailabilityBar from '../components/AvailabilityBar';
 import DateBlock from '../components/DateBlock';
 import { ErrorMessage } from '../components/ErrorMessage';
+import Pagination from '../components/Pagination';
 import { ListSkeleton } from '../components/Skeletons';
 import StatusBadge from '../components/StatusBadge';
+import StatusFilter from '../components/StatusFilter';
 import Container from '../components/ui/Container';
 import EmptyState from '../components/ui/EmptyState';
 import PageHeader from '../components/ui/PageHeader';
+import { useConfirm } from '../components/confirm/ConfirmContext';
+import { useToast } from '../components/toast/ToastContext';
 import { formatWeekdayTime } from '../lib/format';
+import useListParams from '../lib/useListParams';
 import { buttonClass, cardClass } from '../lib/styles';
 
 function Stat({ label, value }: { label: string; value: number }) {
@@ -32,11 +37,43 @@ function summarize(events: EventDto[]) {
   };
 }
 
+const statuses: readonly EventStatus[] = ['Draft', 'Published', 'Cancelled'];
+
 export default function MyEventsPage() {
-  const events = useMyEvents();
+  const { page, status, setPage, setStatus } = useListParams(statuses);
+  const events = useMyEvents(status, page);
+  // Stats cover all of the organizer's events (up to 100), whatever the filter shows.
+  const allEvents = useMyEvents(undefined, 1, 100);
   const publish = usePublishEvent();
   const cancel = useCancelEvent();
-  const stats = summarize(events.data?.items ?? []);
+  const toast = useToast();
+  const confirm = useConfirm();
+  const stats = summarize(allEvents.data?.items ?? []);
+
+  const onPublish = (event: EventDto) =>
+    publish.mutate(event.id, {
+      onSuccess: () => toast.success(`Published “${event.name}”. Reservations are open.`),
+      onError: toast.error,
+    });
+
+  const onCancel = async (event: EventDto) => {
+    const seatsReserved = event.capacity - event.seatsAvailable;
+    const confirmed = await confirm({
+      title: `Cancel “${event.name}”?`,
+      description:
+        seatsReserved > 0
+          ? `This also cancels the reservations for ${seatsReserved.toLocaleString()} ${seatsReserved === 1 ? 'seat' : 'seats'}. It can't be undone.`
+          : "Nobody has reserved yet. This can't be undone.",
+      confirmLabel: 'Cancel event',
+      cancelLabel: 'Keep event',
+    });
+    if (confirmed) {
+      cancel.mutate(event.id, {
+        onSuccess: () => toast.success(`Cancelled “${event.name}”.`),
+        onError: toast.error,
+      });
+    }
+  };
 
   return (
     <Container>
@@ -51,7 +88,7 @@ export default function MyEventsPage() {
         title="My events"
       />
 
-      {events.data && events.data.items.length > 0 ? (
+      {allEvents.data && allEvents.data.items.length > 0 ? (
         <div className="mb-8 grid gap-4 sm:grid-cols-3">
           <Stat label="Live events" value={stats.live} />
           <Stat label="Drafts" value={stats.drafts} />
@@ -59,14 +96,17 @@ export default function MyEventsPage() {
         </div>
       ) : null}
 
+      {allEvents.data && allEvents.data.items.length > 0 ? (
+        <StatusFilter statuses={statuses} value={status} onChange={setStatus} />
+      ) : null}
       {events.isPending ? <ListSkeleton /> : null}
       {events.isError ? <ErrorMessage error={events.error} /> : null}
-      {publish.isError || cancel.isError ? (
-        <div className="mb-4">
-          <ErrorMessage error={publish.error ?? cancel.error} />
-        </div>
+      {events.data?.items.length === 0 && status ? (
+        <EmptyState icon={CalendarPlus} title={`No ${status.toLowerCase()} events`}>
+          <p>Try another filter.</p>
+        </EmptyState>
       ) : null}
-      {events.data?.items.length === 0 ? (
+      {events.data?.items.length === 0 && !status ? (
         <EmptyState icon={CalendarPlus} title="You haven't created any events yet">
           <p>Start with a draft; publish it when you&apos;re ready to sell seats.</p>
         </EmptyState>
@@ -102,21 +142,31 @@ export default function MyEventsPage() {
                   <AvailabilityBar capacity={item.capacity} seatsAvailable={item.seatsAvailable} />
                 )}
               </div>
-              <div className="flex gap-2 sm:w-44 sm:justify-end">
+              <div className="flex gap-2 sm:w-60 sm:justify-end">
                 {item.status === 'Draft' ? (
                   <button
                     className={buttonClass('primary', 'sm')}
                     type="button"
-                    onClick={() => publish.mutate(item.id)}
+                    onClick={() => onPublish(item)}
                   >
                     Publish
                   </button>
                 ) : null}
                 {item.status === 'Cancelled' ? null : (
+                  <Link
+                    aria-label={`Edit ${item.name}`}
+                    className={buttonClass('ghost', 'sm')}
+                    to={`/me/events/${item.id}/edit`}
+                  >
+                    <Pencil aria-hidden className="size-4" />
+                    Edit
+                  </Link>
+                )}
+                {item.status === 'Cancelled' ? null : (
                   <button
                     className={buttonClass('danger', 'sm')}
                     type="button"
-                    onClick={() => cancel.mutate(item.id)}
+                    onClick={async () => onCancel(item)}
                   >
                     Cancel
                   </button>
@@ -126,6 +176,13 @@ export default function MyEventsPage() {
           </li>
         ))}
       </ul>
+      {events.data ? (
+        <Pagination
+          page={events.data.page}
+          totalPages={events.data.totalPages}
+          onPageChange={setPage}
+        />
+      ) : null}
     </Container>
   );
 }

@@ -28,7 +28,7 @@ Sizes: **S** is an evening, **M** is a few sessions, and **L** is worth splittin
     - [ ] Like the API, the workflow is skipped until the environment is configured.
 
 - [ ] **SPA fallback and security headers** · `feat` · S
-  - _Done when:_ `staticwebapp.config.json` rewrites unknown paths to `index.html` and sets a Content Security Policy. The policy allows the API origin and `login.microsoftonline.com`, sets `frame-ancestors 'none'`, and turns on HSTS.
+  - _Done when:_ `staticwebapp.config.json` rewrites unknown paths to `index.html` and sets a Content Security Policy. The policy allows the API origin and `login.microsoftonline.com`, sets `frame-ancestors 'none'`, and turns on HSTS. The theme script in `index.html` is inline, so the policy needs its hash.
 
 - [ ] **Automated releases** · `ci` · S
   - _Done when:_ release-please turns Conventional Commits into version bumps, `CHANGELOG.md` entries, and GitHub Releases.
@@ -52,28 +52,27 @@ Sizes: **S** is an evening, **M** is a few sessions, and **L** is worth splittin
 
 ## Phase 3 — Product polish
 
-- [ ] **Edit events** · `feat(events)` · S
-  - _Done when:_ organizers can edit a draft or published event (`PUT /api/events/{id}`). Capacity errors from the API show on the field.
+- [x] **Edit events** · `feat(events)` · S
+  - _Done:_ organizers edit draft or published events from My events (`PUT /api/events/{id}`), through a form shared with event creation. Capacity can't go below the seats already reserved; that's checked before sending, and any conflict the API reports shows as an error. The original start time is kept unless the date is changed, so the minute-precision date input never drops seconds.
 
-- [ ] **Pagination and filters** · `feat(events)` · S
-  - _Done when:_ the events list and both "my" lists page through results using the API's `page`/`totalPages`, and the "my" lists filter by status.
+- [x] **Pagination and filters** · `feat(events)` · S
+  - _Done:_ the events list pages 9 at a time. My tickets and My events page 10 at a time and filter by status. Page and filter live in the URL (`?page=2&status=Confirmed`), so they survive a refresh and the back button, and the current page stays visible while the next loads. My events' stats ignore the filter.
 
-- [ ] **Confirm before destructive actions** · `feat` · S
-  - _Done when:_ cancelling an event or a reservation asks for confirmation in an accessible dialog. Cancelling an event says how many reservations it will cancel.
+- [x] **Confirm before destructive actions** · `feat` · S
+  - _Done:_ cancelling an event or a reservation asks first, in a native `<dialog>`. It's modal, closes on Escape, focuses the safe choice, and returns focus afterwards. Cancelling an event says how many reserved seats it affects; the API exposes seats reserved rather than a count of reservations.
 
-- [ ] **Toast confirmations** · `feat` · S
-  - _Done when:_ publishing, cancelling, and confirming show a brief, accessible toast (`role="status"`), and failures show an error toast with the problem detail.
-  - _Already done:_ loading skeletons, and the hold countdown turning red in its last minute.
+- [x] **Toast confirmations** · `feat` · S
+  - _Done:_ publishing, cancelling, creating, reserving, and confirming show a brief toast, and failed list actions show the problem detail in an error toast. Toasts live in always-present polite and assertive live regions, so screen readers announce them. Form and page errors stay inline, next to what they're about.
 
-- [ ] **Theme switcher** · `feat` · S
-  - _Done when:_ a header control switches between system, light, and dark. The choice is remembered in `localStorage`, and there's no flash of the wrong theme on load.
+- [x] **Theme switcher** · `feat` · S
+  - _Done:_ a header button cycles system → light → dark. The choice is saved in `localStorage`, "system" keeps following OS changes, and an inline script in `index.html` applies the theme before first paint, so there's no flash.
 
 - [ ] **Start time required by the API itself** · `fix` (event-ticketing-api) · S
   - _Why:_ an empty start time fails JSON binding before validation, so the API answers with a technical `$.startsAt` message. The form now catches it first.
   - _Done when:_ `EventRequest.StartsAt` is nullable and FluentValidation reports "'Starts At' must not be empty."
 
-- [ ] **Route-level code splitting** · `perf` · S
-  - _Done when:_ organizer pages load lazily, so customers never download them, and the build reports the chunk sizes.
+- [x] **Route-level code splitting** · `perf` · S
+  - _Done:_ My events, New event, and Edit event load lazily behind a Suspense boundary with a skeleton, so customers never download them. The organizer chunks total about 5 kB gzipped, and `npm run build` lists every chunk's size.
 
 ## Housekeeping to watch
 

@@ -8,6 +8,8 @@ import { hasRole, Roles } from '../auth/roles';
 import Countdown from '../components/Countdown';
 import { ErrorMessage } from '../components/ErrorMessage';
 import StatusBadge from '../components/StatusBadge';
+import { useConfirm } from '../components/confirm/ConfirmContext';
+import { useToast } from '../components/toast/ToastContext';
 import Container from '../components/ui/Container';
 import { formatLongDate, formatTime } from '../lib/format';
 import { buttonClass } from '../lib/styles';
@@ -33,6 +35,8 @@ export default function ReservationPage() {
   const reservation = useReservation(reservationId);
   const confirm = useConfirmReservation();
   const cancel = useCancelReservation();
+  const toast = useToast();
+  const confirmDialog = useConfirm();
 
   if (reservation.isPending) {
     return (
@@ -127,7 +131,11 @@ export default function ReservationPage() {
                   className={buttonClass('primary', 'lg')}
                   disabled={confirm.isPending}
                   type="button"
-                  onClick={() => confirm.mutate(data.id)}
+                  onClick={() =>
+                    confirm.mutate(data.id, {
+                      onSuccess: () => toast.success('Reservation confirmed. Enjoy the show!'),
+                    })
+                  }
                 >
                   <CircleCheck aria-hidden className="size-5" />
                   Confirm reservation
@@ -137,7 +145,22 @@ export default function ReservationPage() {
                 className={buttonClass('danger', 'lg')}
                 disabled={cancel.isPending}
                 type="button"
-                onClick={() => cancel.mutate(data.id)}
+                onClick={async () => {
+                  const seats =
+                    data.quantity === 1 ? 'Your seat goes' : `Your ${data.quantity} seats go`;
+                  const confirmed = await confirmDialog({
+                    title: 'Cancel this reservation?',
+                    description: `${seats} back on sale for ${data.eventName}. This can't be undone.`,
+                    confirmLabel: 'Cancel reservation',
+                    cancelLabel: 'Keep reservation',
+                  });
+                  if (confirmed) {
+                    cancel.mutate(data.id, {
+                      onSuccess: () =>
+                        toast.success('Reservation cancelled. Your seats are back on sale.'),
+                    });
+                  }
+                }}
               >
                 Cancel reservation
               </button>

@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router';
 import { useEvents } from '../api/queries';
 import { ErrorMessage } from '../components/ErrorMessage';
 import EventCard from '../components/EventCard';
+import Pagination from '../components/Pagination';
 import { EventGridSkeleton } from '../components/Skeletons';
 import Container from '../components/ui/Container';
 import EmptyState from '../components/ui/EmptyState';
@@ -12,8 +13,20 @@ import EmptyState from '../components/ui/EmptyState';
 export default function EventsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get('q') ?? '';
+  const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const [draft, setDraft] = useState(search);
-  const events = useEvents(search);
+  const events = useEvents(search, page);
+
+  const goToPage = (nextPage: number) => {
+    const next = new URLSearchParams(searchParams);
+    if (nextPage > 1) {
+      next.set('page', String(nextPage));
+    } else {
+      next.delete('page');
+    }
+    setSearchParams(next);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const onSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -113,6 +126,13 @@ export default function EventsPage() {
               </li>
             ))}
           </ul>
+        ) : null}
+        {events.data ? (
+          <Pagination
+            page={events.data.page}
+            totalPages={events.data.totalPages}
+            onPageChange={goToPage}
+          />
         ) : null}
       </Container>
     </>

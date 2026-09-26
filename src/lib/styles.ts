@@ -1,6 +1,6 @@
 import cx from './cx';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'destructive';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const buttonVariants: Record<ButtonVariant, string> = {
@@ -8,7 +8,10 @@ const buttonVariants: Record<ButtonVariant, string> = {
     'bg-linear-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-violet-600/30 hover:from-violet-500 hover:to-fuchsia-500',
   secondary: 'border border-line bg-surface text-ink hover:bg-surface-muted',
   ghost: 'text-ink-muted hover:bg-surface-muted hover:text-ink',
+  /** Outlined: offers a destructive action. */
   danger: 'border border-rose-500/40 text-rose-600 hover:bg-rose-500/10 dark:text-rose-400',
+  /** Solid: commits to a destructive action, e.g. in a confirmation dialog. */
+  destructive: 'bg-rose-600 text-white shadow-sm shadow-rose-600/30 hover:bg-rose-500',
 };
 
 const buttonSizes: Record<ButtonSize, string> = {
