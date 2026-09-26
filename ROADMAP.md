@@ -14,6 +14,7 @@ Sizes: **S** is an evening, **M** is a few sessions, and **L** is worth splittin
 - [x] Entra ID sign-in with MSAL (loaded only when configured), plus a local dev-token mode
 - [x] Browse, reserve with a hold countdown, confirm and cancel, my tickets, my events, create event
 - [x] Vitest, React Testing Library, and MSW tests; a GitHub Actions CI workflow
+- [x] Visual design: Tailwind CSS v4, a gradient hero, event cards with date blocks and availability bars, a ticket-style reservation with a hold progress bar, an organizer dashboard, light and dark themes, and loading skeletons and empty states
 
 ---
 
@@ -60,8 +61,16 @@ Sizes: **S** is an evening, **M** is a few sessions, and **L** is worth splittin
 - [ ] **Confirm before destructive actions** · `feat` · S
   - _Done when:_ cancelling an event or a reservation asks for confirmation in an accessible dialog. Cancelling an event says how many reservations it will cancel.
 
-- [ ] **Loading and feedback polish** · `feat` · M
-  - _Done when:_ lists show skeletons while loading, actions show toast confirmations, and the hold countdown warns in its last minute.
+- [ ] **Toast confirmations** · `feat` · S
+  - _Done when:_ publishing, cancelling, and confirming show a brief, accessible toast (`role="status"`), and failures show an error toast with the problem detail.
+  - _Already done:_ loading skeletons, and the hold countdown turning red in its last minute.
+
+- [ ] **Theme switcher** · `feat` · S
+  - _Done when:_ a header control switches between system, light, and dark. The choice is remembered in `localStorage`, and there's no flash of the wrong theme on load.
+
+- [ ] **Start time required by the API itself** · `fix` (event-ticketing-api) · S
+  - _Why:_ an empty start time fails JSON binding before validation, so the API answers with a technical `$.startsAt` message. The form now catches it first.
+  - _Done when:_ `EventRequest.StartsAt` is nullable and FluentValidation reports "'Starts At' must not be empty."
 
 - [ ] **Route-level code splitting** · `perf` · S
   - _Done when:_ organizer pages load lazily, so customers never download them, and the build reports the chunk sizes.
