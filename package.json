@@ -1,0 +1,71 @@
+{
+  "name": "event-ticketing-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "api:types": "openapi-typescript openapi/ticketing-api.v1.json -o src/api/schema.d.ts",
+    "api:sync": "node scripts/sync-api-contract.js && npm run api:types",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@azure/msal-browser": "^5.23.0",
+    "@azure/msal-react": "^5.7.1",
+    "@tanstack/react-query": "^5.103.3",
+    "openapi-fetch": "^0.17.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router": "^8.4.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
+    "@eslint/compat": "^2.1.1",
+    "@eslint/js": "^9.39.5",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "eslint": "^9.39.5",
+    "eslint-config-airbnb-extended": "^3.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "jsdom": "^30.1.1",
+    "lint-staged": "^17.5.1",
+    "msw": "^2.15.0",
+    "openapi-typescript": "^7.13.0",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.2"
+  },
+  "overrides": {
+    "openapi-typescript": {
+      "typescript": "$typescript"
+    }
+  },
+  "description": "React front end for the Event Ticketing API: browse events, reserve seats, and manage events.",
+  "lint-staged": {
+    "*.{ts,tsx,js}": [
+      "eslint --fix --max-warnings=0 --no-warn-ignored",
+      "prettier --write"
+    ],
+    "*.{json,css,md,html,yml}": "prettier --write"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,6 @@
+dist
+coverage
+package-lock.json
+# Generated or vendored from event-ticketing-api
+src/api/schema.d.ts
+openapi/*.json

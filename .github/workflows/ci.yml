@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, edited] # "edited" re-checks a renamed PR title.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HUSKY: 0 # Git hooks are for local development only.
+
+jobs:
+  commits:
+    name: Conventional commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # Full history so the pushed or PR commit range is available.
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # Same rules as the local commit-msg hook, for commits made on github.com or with --no-verify.
+      - name: Lint commit messages
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            echo "No commit range to check."
+            exit 0
+          fi
+          npx commitlint --from "$BASE" --to "$HEAD" --verbose
+
+      # With squash merges the PR title becomes the commit message on main.
+      - name: Lint pull request title
+        if: github.event_name == 'pull_request'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s\n' "$TITLE" | npx commitlint --verbose
+
+  verify:
+    name: Lint, type-check, test, and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint (Airbnb rules)
+        run: npm run lint
+
+      - name: Type-check
+        run: npm run typecheck
+
+      # The committed types must match the vendored API contract they're generated from.
+      - name: Check generated API types are current
+        run: |
+          npm run api:types
+          git diff --exit-code -- src/api/schema.d.ts
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
