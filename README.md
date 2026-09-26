@@ -4,14 +4,21 @@
 
 The React front end for [event-ticketing-api](https://github.com/ryanlakner/event-ticketing-api). Customers browse events, reserve seats, and confirm before their hold runs out; organizers create, publish, and cancel their events.
 
+![Upcoming events, with date blocks and seat availability bars](docs/screenshots/events.png)
+
+| Event page (light theme)                                               | Reservation hold on a phone                                                                | Organizer dashboard                                           |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| ![Event page with the reserve panel](docs/screenshots/event-light.png) | ![Ticket-style reservation with a hold countdown](docs/screenshots/reservation-mobile.png) | ![My events with sales stats](docs/screenshots/my-events.png) |
+
 | Concern          | Choice                                                                                       |
 | ---------------- | -------------------------------------------------------------------------------------------- |
 | App              | React 19, TypeScript 6 (strict), Vite 8                                                      |
+| Styling          | Tailwind CSS v4 with light and dark themes, Lucide icons, Inter                              |
 | Routing and data | React Router 8, TanStack Query                                                               |
 | API client       | `openapi-fetch`, typed by `openapi-typescript` from the API's committed OpenAPI contract     |
 | Sign-in          | Microsoft Entra ID with MSAL (authorization code + PKCE), or local `dotnet user-jwts` tokens |
 | Linting          | ESLint 9 with the Airbnb rules (`eslint-config-airbnb-extended`) and strict TypeScript rules |
-| Formatting       | Prettier, configured to Airbnb's style                                                       |
+| Formatting       | Prettier, configured to Airbnb's style, with Tailwind class sorting                          |
 | Tests            | Vitest, React Testing Library, Mock Service Worker                                           |
 | Git hooks        | Husky, lint-staged, commitlint (Conventional Commits)                                        |
 
@@ -23,6 +30,7 @@ The React front end for [event-ticketing-api](https://github.com/ryanlakner/even
 - **My events** lets an organizer create drafts, publish them, and cancel events.
 - Navigation and pages adapt to the signed-in user's roles. That's for convenience only: the API enforces every rule itself.
 - API errors appear as their problem-details message, and validation errors show next to the field they belong to.
+- Light and dark themes follow the operating system. Layouts adapt from phones to desktops, with loading skeletons and empty states throughout.
 
 ## Getting started
 
@@ -78,6 +86,7 @@ The Entra ID configuration takes precedence over dev tokens. With neither set, t
 Deliberate deviations, each commented in the config:
 
 - `react/react-in-jsx-scope` and `react/jsx-uses-react` are off. They predate React 17's automatic JSX runtime.
+- `react/require-default-props` still requires a default for every optional prop, but as a default parameter instead of `defaultProps`, which React 19 removed for function components.
 - `@typescript-eslint/explicit-module-boundary-types`, from the strict add-on rather than Airbnb itself, is off. `tsc` already infers and checks return types.
 - Tests and test helpers may import `devDependencies`.
 
@@ -111,10 +120,13 @@ CI runs commitlint again over pushed commits and pull request titles.
 src/
   api/          Typed client, generated schema, TanStack Query hooks
   auth/         Sign-in: MSAL (Entra ID), dev tokens, or anonymous; role helpers
-  components/   Layout, role gating, countdown, badges, errors
+  components/   Layout, event cards, availability bar, countdown, badges, errors
+  components/ui Shared primitives: container, page header, empty state
+  lib/          Formatting helpers and shared Tailwind class recipes
   pages/        One component per route
   test/         Test setup, MSW server, fixtures, render helper
 openapi/        Vendored API contract
+docs/           README screenshots
 scripts/        Contract sync
 ```
 

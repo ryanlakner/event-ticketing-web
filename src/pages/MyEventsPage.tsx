@@ -1,53 +1,131 @@
+import { CalendarPlus, Plus } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { useCancelEvent, useMyEvents, usePublishEvent } from '../api/queries';
+import type { EventDto } from '../api/types';
+import AvailabilityBar from '../components/AvailabilityBar';
+import DateBlock from '../components/DateBlock';
 import { ErrorMessage } from '../components/ErrorMessage';
+import { ListSkeleton } from '../components/Skeletons';
 import StatusBadge from '../components/StatusBadge';
-import { formatDateTime } from '../lib/format';
+import Container from '../components/ui/Container';
+import EmptyState from '../components/ui/EmptyState';
+import PageHeader from '../components/ui/PageHeader';
+import { formatWeekdayTime } from '../lib/format';
+import { buttonClass, cardClass } from '../lib/styles';
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className={`${cardClass} p-5`}>
+      <p className="text-sm text-ink-muted">{label}</p>
+      <p className="mt-1 text-3xl font-bold tabular-nums">{value.toLocaleString()}</p>
+    </div>
+  );
+}
+
+function summarize(events: EventDto[]) {
+  const live = events.filter((e) => e.status === 'Published');
+  return {
+    live: live.length,
+    drafts: events.filter((e) => e.status === 'Draft').length,
+    seatsSold: live.reduce((total, e) => total + (e.capacity - e.seatsAvailable), 0),
+  };
+}
 
 export default function MyEventsPage() {
   const events = useMyEvents();
   const publish = usePublishEvent();
   const cancel = useCancelEvent();
+  const stats = summarize(events.data?.items ?? []);
 
   return (
-    <section>
-      <div className="page-heading">
-        <h1>My events</h1>
-        <Link className="button" to="/me/events/new">
-          New event
-        </Link>
-      </div>
-      {events.isPending && <p>Loading your events…</p>}
-      {events.isError && <ErrorMessage error={events.error} />}
-      {(publish.isError || cancel.isError) && (
-        <ErrorMessage error={publish.error ?? cancel.error} />
-      )}
-      {events.data?.items.length === 0 && <p>You haven&apos;t created any events yet.</p>}
-      <ul className="list">
+    <Container>
+      <PageHeader
+        actions={
+          <Link className={buttonClass('primary')} to="/me/events/new">
+            <Plus aria-hidden className="size-4" />
+            New event
+          </Link>
+        }
+        description="Create drafts, publish when you're ready, and track sales."
+        title="My events"
+      />
+
+      {events.data && events.data.items.length > 0 ? (
+        <div className="mb-8 grid gap-4 sm:grid-cols-3">
+          <Stat label="Live events" value={stats.live} />
+          <Stat label="Drafts" value={stats.drafts} />
+          <Stat label="Seats sold" value={stats.seatsSold} />
+        </div>
+      ) : null}
+
+      {events.isPending ? <ListSkeleton /> : null}
+      {events.isError ? <ErrorMessage error={events.error} /> : null}
+      {publish.isError || cancel.isError ? (
+        <div className="mb-4">
+          <ErrorMessage error={publish.error ?? cancel.error} />
+        </div>
+      ) : null}
+      {events.data?.items.length === 0 ? (
+        <EmptyState icon={CalendarPlus} title="You haven't created any events yet">
+          <p>Start with a draft; publish it when you&apos;re ready to sell seats.</p>
+        </EmptyState>
+      ) : null}
+
+      <ul className="space-y-3">
         {events.data?.items.map((item) => (
           <li key={item.id}>
-            <Link to={`/events/${item.id}`}>{item.name}</Link>
-            <span>{formatDateTime(item.startsAt)}</span>
-            <span>
-              {item.seatsAvailable} / {item.capacity} left
-            </span>
-            <StatusBadge status={item.status} />
-            <span className="actions">
-              {item.status === 'Draft' && (
-                <button type="button" onClick={() => publish.mutate(item.id)}>
-                  Publish
-                </button>
-              )}
-              {item.status !== 'Cancelled' && (
-                <button type="button" className="secondary" onClick={() => cancel.mutate(item.id)}>
-                  Cancel
-                </button>
-              )}
-            </span>
+            <article className={`${cardClass} flex flex-col gap-4 p-4 sm:flex-row sm:items-center`}>
+              <div className="flex min-w-0 flex-1 items-center gap-4">
+                <DateBlock iso={item.startsAt} />
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="truncate font-semibold">
+                      <Link
+                        className="hover:text-violet-700 dark:hover:text-violet-300"
+                        to={`/events/${item.id}`}
+                      >
+                        {item.name}
+                      </Link>
+                    </h2>
+                    <StatusBadge status={item.status} />
+                  </div>
+                  <p className="text-sm text-ink-muted">
+                    {item.venue} · {formatWeekdayTime(item.startsAt)}
+                  </p>
+                </div>
+              </div>
+              <div className="sm:w-48">
+                {item.status === 'Cancelled' ? (
+                  <p className="text-sm text-ink-muted">Reservations were cancelled</p>
+                ) : (
+                  <AvailabilityBar capacity={item.capacity} seatsAvailable={item.seatsAvailable} />
+                )}
+              </div>
+              <div className="flex gap-2 sm:w-44 sm:justify-end">
+                {item.status === 'Draft' ? (
+                  <button
+                    className={buttonClass('primary', 'sm')}
+                    type="button"
+                    onClick={() => publish.mutate(item.id)}
+                  >
+                    Publish
+                  </button>
+                ) : null}
+                {item.status === 'Cancelled' ? null : (
+                  <button
+                    className={buttonClass('danger', 'sm')}
+                    type="button"
+                    onClick={() => cancel.mutate(item.id)}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </article>
           </li>
         ))}
       </ul>
-    </section>
+    </Container>
   );
 }

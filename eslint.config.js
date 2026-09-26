@@ -50,6 +50,17 @@ export default defineConfig([
     rules: { '@typescript-eslint/explicit-module-boundary-types': 'off' },
   },
   {
+    name: 'project/react-19-default-props',
+    // Airbnb wants every optional prop to have a default, via defaultProps. React 19 removed
+    // defaultProps for function components, so keep the rule but require default parameters.
+    rules: {
+      'react/require-default-props': [
+        'error',
+        { forbidDefaultForRequired: true, functions: 'defaultArguments' },
+      ],
+    },
+  },
+  {
     name: 'project/react-jsx-runtime',
     // The only deviation from Airbnb: these predate React 17's automatic JSX runtime
     // (tsconfig "jsx": "react-jsx"), which no longer needs React in scope.
