@@ -1,4 +1,4 @@
-import { CalendarPlus, Plus } from 'lucide-react';
+import { CalendarPlus, Pencil, Plus } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { useCancelEvent, useMyEvents, usePublishEvent } from '../api/queries';
@@ -126,7 +126,7 @@ export default function MyEventsPage() {
                   <AvailabilityBar capacity={item.capacity} seatsAvailable={item.seatsAvailable} />
                 )}
               </div>
-              <div className="flex gap-2 sm:w-44 sm:justify-end">
+              <div className="flex gap-2 sm:w-60 sm:justify-end">
                 {item.status === 'Draft' ? (
                   <button
                     className={buttonClass('primary', 'sm')}
@@ -136,6 +136,16 @@ export default function MyEventsPage() {
                     Publish
                   </button>
                 ) : null}
+                {item.status === 'Cancelled' ? null : (
+                  <Link
+                    aria-label={`Edit ${item.name}`}
+                    className={buttonClass('ghost', 'sm')}
+                    to={`/me/events/${item.id}/edit`}
+                  >
+                    <Pencil aria-hidden className="size-4" />
+                    Edit
+                  </Link>
+                )}
                 {item.status === 'Cancelled' ? null : (
                   <button
                     className={buttonClass('danger', 'sm')}

@@ -77,6 +77,20 @@ export function useCreateEvent() {
   });
 }
 
+export function useUpdateEvent(id: string) {
+  const api = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: EventRequest) =>
+      unwrap(api.PUT('/api/events/{id}', { params: { path: { id } }, body })),
+    onSuccess: async () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.events }),
+        queryClient.invalidateQueries({ queryKey: ['me', 'events'] }),
+      ]),
+  });
+}
+
 export function usePublishEvent() {
   const api = useApiClient();
   const queryClient = useQueryClient();

@@ -6,6 +6,7 @@ import ConfirmProvider from './components/confirm/ConfirmProvider';
 import RequireRole from './components/RequireRole';
 import ToastProvider from './components/toast/ToastProvider';
 import CreateEventPage from './pages/CreateEventPage';
+import EditEventPage from './pages/EditEventPage';
 import EventDetailPage from './pages/EventDetailPage';
 import EventsPage from './pages/EventsPage';
 import MyEventsPage from './pages/MyEventsPage';
@@ -43,6 +44,14 @@ export default function App() {
               element={
                 <RequireRole role={Roles.Organizer}>
                   <CreateEventPage />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="me/events/:eventId/edit"
+              element={
+                <RequireRole role={Roles.Organizer}>
+                  <EditEventPage />
                 </RequireRole>
               }
             />

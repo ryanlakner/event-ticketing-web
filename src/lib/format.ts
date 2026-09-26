@@ -40,6 +40,13 @@ export function formatDay(iso: string): string {
   return day.format(new Date(iso));
 }
 
+/** An ISO timestamp as the local "YYYY-MM-DDTHH:mm" that <input type="datetime-local"> expects. */
+export function toDateTimeLocal(iso: string): string {
+  const date = new Date(iso);
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 /** Formats a remaining duration as m:ss, or h:mm:ss past an hour. Never negative. */
 export function formatCountdown(milliseconds: number): string {
   const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));

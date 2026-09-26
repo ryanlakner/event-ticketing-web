@@ -52,8 +52,8 @@ Sizes: **S** is an evening, **M** is a few sessions, and **L** is worth splittin
 
 ## Phase 3 — Product polish
 
-- [ ] **Edit events** · `feat(events)` · S
-  - _Done when:_ organizers can edit a draft or published event (`PUT /api/events/{id}`). Capacity errors from the API show on the field.
+- [x] **Edit events** · `feat(events)` · S
+  - _Done:_ organizers edit draft or published events from My events (`PUT /api/events/{id}`), through a form shared with event creation. Capacity can't go below the seats already reserved; that's checked before sending, and any conflict the API reports shows as an error. The original start time is kept unless the date is changed, so the minute-precision date input never drops seconds.
 
 - [ ] **Pagination and filters** · `feat(events)` · S
   - _Done when:_ the events list and both "my" lists page through results using the API's `page`/`totalPages`, and the "my" lists filter by status.
