@@ -58,8 +58,8 @@ Sizes: **S** is an evening, **M** is a few sessions, and **L** is worth splittin
 - [ ] **Pagination and filters** · `feat(events)` · S
   - _Done when:_ the events list and both "my" lists page through results using the API's `page`/`totalPages`, and the "my" lists filter by status.
 
-- [ ] **Confirm before destructive actions** · `feat` · S
-  - _Done when:_ cancelling an event or a reservation asks for confirmation in an accessible dialog. Cancelling an event says how many reservations it will cancel.
+- [x] **Confirm before destructive actions** · `feat` · S
+  - _Done:_ cancelling an event or a reservation asks first, in a native `<dialog>`. It's modal, closes on Escape, focuses the safe choice, and returns focus afterwards. Cancelling an event says how many reserved seats it affects; the API exposes seats reserved rather than a count of reservations.
 
 - [x] **Toast confirmations** · `feat` · S
   - _Done:_ publishing, cancelling, creating, reserving, and confirming show a brief toast, and failed list actions show the problem detail in an error toast. Toasts live in always-present polite and assertive live regions, so screen readers announce them. Form and page errors stay inline, next to what they're about.

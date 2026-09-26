@@ -11,6 +11,7 @@ import StatusBadge from '../components/StatusBadge';
 import Container from '../components/ui/Container';
 import EmptyState from '../components/ui/EmptyState';
 import PageHeader from '../components/ui/PageHeader';
+import { useConfirm } from '../components/confirm/ConfirmContext';
 import { useToast } from '../components/toast/ToastContext';
 import { formatWeekdayTime } from '../lib/format';
 import { buttonClass, cardClass } from '../lib/styles';
@@ -38,6 +39,7 @@ export default function MyEventsPage() {
   const publish = usePublishEvent();
   const cancel = useCancelEvent();
   const toast = useToast();
+  const confirm = useConfirm();
   const stats = summarize(events.data?.items ?? []);
 
   const onPublish = (event: EventDto) =>
@@ -46,11 +48,24 @@ export default function MyEventsPage() {
       onError: toast.error,
     });
 
-  const onCancel = (event: EventDto) =>
-    cancel.mutate(event.id, {
-      onSuccess: () => toast.success(`Cancelled “${event.name}”.`),
-      onError: toast.error,
+  const onCancel = async (event: EventDto) => {
+    const seatsReserved = event.capacity - event.seatsAvailable;
+    const confirmed = await confirm({
+      title: `Cancel “${event.name}”?`,
+      description:
+        seatsReserved > 0
+          ? `This also cancels the reservations for ${seatsReserved.toLocaleString()} ${seatsReserved === 1 ? 'seat' : 'seats'}. It can't be undone.`
+          : "Nobody has reserved yet. This can't be undone.",
+      confirmLabel: 'Cancel event',
+      cancelLabel: 'Keep event',
     });
+    if (confirmed) {
+      cancel.mutate(event.id, {
+        onSuccess: () => toast.success(`Cancelled “${event.name}”.`),
+        onError: toast.error,
+      });
+    }
+  };
 
   return (
     <Container>
@@ -125,7 +140,7 @@ export default function MyEventsPage() {
                   <button
                     className={buttonClass('danger', 'sm')}
                     type="button"
-                    onClick={() => onCancel(item)}
+                    onClick={async () => onCancel(item)}
                   >
                     Cancel
                   </button>

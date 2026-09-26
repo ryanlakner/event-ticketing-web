@@ -18,6 +18,15 @@ beforeEach(() => {
   );
 });
 
+// Just enough of the modal API for tests: open/close toggle the attribute, and Escape is
+// simulated by dispatching a "cancel" event.
+HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+  this.setAttribute('open', '');
+};
+HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+  this.removeAttribute('open');
+};
+
 // Any request without a handler fails the test, so no call can silently go unmocked.
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
