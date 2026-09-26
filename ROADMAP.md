@@ -61,9 +61,8 @@ Sizes: **S** is an evening, **M** is a few sessions, and **L** is worth splittin
 - [ ] **Confirm before destructive actions** · `feat` · S
   - _Done when:_ cancelling an event or a reservation asks for confirmation in an accessible dialog. Cancelling an event says how many reservations it will cancel.
 
-- [ ] **Toast confirmations** · `feat` · S
-  - _Done when:_ publishing, cancelling, and confirming show a brief, accessible toast (`role="status"`), and failures show an error toast with the problem detail.
-  - _Already done:_ loading skeletons, and the hold countdown turning red in its last minute.
+- [x] **Toast confirmations** · `feat` · S
+  - _Done:_ publishing, cancelling, creating, reserving, and confirming show a brief toast, and failed list actions show the problem detail in an error toast. Toasts live in always-present polite and assertive live regions, so screen readers announce them. Form and page errors stay inline, next to what they're about.
 
 - [ ] **Theme switcher** · `feat` · S
   - _Done when:_ a header control switches between system, light, and dark. The choice is remembered in `localStorage`, and there's no flash of the wrong theme on load.

@@ -21,6 +21,7 @@ describe('ReservationPage', () => {
     await user.click(await screen.findByRole('button', { name: 'Confirm reservation' }));
 
     expect(await screen.findByText('Confirmed', { selector: '[data-status]' })).toBeInTheDocument();
+    expect(screen.getByText('Reservation confirmed. Enjoy the show!')).toBeInTheDocument();
     expect(screen.queryByText(/Held for/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Confirm reservation' })).not.toBeInTheDocument();
   });

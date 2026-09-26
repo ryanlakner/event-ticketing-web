@@ -11,6 +11,7 @@ import DateBlock from '../components/DateBlock';
 import { ErrorMessage, fieldErrors } from '../components/ErrorMessage';
 import SignInButtons from '../components/SignInButtons';
 import StatusBadge from '../components/StatusBadge';
+import { useToast } from '../components/toast/ToastContext';
 import Container from '../components/ui/Container';
 import { formatLongDate, formatTime } from '../lib/format';
 import { buttonClass, cardClass, inputClass, labelClass } from '../lib/styles';
@@ -21,6 +22,7 @@ function ReserveForm({ event }: { event: EventDto }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const reserve = useReserveTickets(event.id);
+  const toast = useToast();
   const [email, setEmail] = useState(user?.name.includes('@') ? user.name : '');
   const [quantity, setQuantity] = useState(1);
   const maxQuantity = Math.min(maxTicketsPerReservation, event.seatsAvailable);
@@ -30,7 +32,12 @@ function ReserveForm({ event }: { event: EventDto }) {
     submitEvent.preventDefault();
     reserve.mutate(
       { customerEmail: email, quantity },
-      { onSuccess: async (reservation) => navigate(`/reservations/${reservation.id}`) },
+      {
+        onSuccess: async (reservation) => {
+          toast.success('Seats held for 10 minutes. Confirm to keep them.');
+          await navigate(`/reservations/${reservation.id}`);
+        },
+      },
     );
   };
 

@@ -11,6 +11,7 @@ import StatusBadge from '../components/StatusBadge';
 import Container from '../components/ui/Container';
 import EmptyState from '../components/ui/EmptyState';
 import PageHeader from '../components/ui/PageHeader';
+import { useToast } from '../components/toast/ToastContext';
 import { formatWeekdayTime } from '../lib/format';
 import { buttonClass, cardClass } from '../lib/styles';
 
@@ -36,7 +37,20 @@ export default function MyEventsPage() {
   const events = useMyEvents();
   const publish = usePublishEvent();
   const cancel = useCancelEvent();
+  const toast = useToast();
   const stats = summarize(events.data?.items ?? []);
+
+  const onPublish = (event: EventDto) =>
+    publish.mutate(event.id, {
+      onSuccess: () => toast.success(`Published “${event.name}”. Reservations are open.`),
+      onError: toast.error,
+    });
+
+  const onCancel = (event: EventDto) =>
+    cancel.mutate(event.id, {
+      onSuccess: () => toast.success(`Cancelled “${event.name}”.`),
+      onError: toast.error,
+    });
 
   return (
     <Container>
@@ -61,11 +75,6 @@ export default function MyEventsPage() {
 
       {events.isPending ? <ListSkeleton /> : null}
       {events.isError ? <ErrorMessage error={events.error} /> : null}
-      {publish.isError || cancel.isError ? (
-        <div className="mb-4">
-          <ErrorMessage error={publish.error ?? cancel.error} />
-        </div>
-      ) : null}
       {events.data?.items.length === 0 ? (
         <EmptyState icon={CalendarPlus} title="You haven't created any events yet">
           <p>Start with a draft; publish it when you&apos;re ready to sell seats.</p>
@@ -107,7 +116,7 @@ export default function MyEventsPage() {
                   <button
                     className={buttonClass('primary', 'sm')}
                     type="button"
-                    onClick={() => publish.mutate(item.id)}
+                    onClick={() => onPublish(item)}
                   >
                     Publish
                   </button>
@@ -116,7 +125,7 @@ export default function MyEventsPage() {
                   <button
                     className={buttonClass('danger', 'sm')}
                     type="button"
-                    onClick={() => cancel.mutate(item.id)}
+                    onClick={() => onCancel(item)}
                   >
                     Cancel
                   </button>

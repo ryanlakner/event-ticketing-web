@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router';
 
 import { useCreateEvent } from '../api/queries';
 import { ErrorMessage, fieldErrors } from '../components/ErrorMessage';
+import { useToast } from '../components/toast/ToastContext';
 import Container from '../components/ui/Container';
 import cx from '../lib/cx';
 import { buttonClass, cardClass, inputClass, labelClass } from '../lib/styles';
@@ -39,6 +40,7 @@ function Field({ id, label, error, className = undefined, children }: FieldProps
 export default function CreateEventPage() {
   const navigate = useNavigate();
   const create = useCreateEvent();
+  const toast = useToast();
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -78,7 +80,12 @@ export default function CreateEventPage() {
         startsAt: form.startsAt ? new Date(form.startsAt).toISOString() : '',
         capacity: form.capacity,
       },
-      { onSuccess: async () => navigate('/me/events') },
+      {
+        onSuccess: async () => {
+          toast.success(`Draft “${form.name.trim()}” created. Publish it when you're ready.`);
+          await navigate('/me/events');
+        },
+      },
     );
   };
 
