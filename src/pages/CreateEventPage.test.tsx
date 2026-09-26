@@ -50,7 +50,8 @@ describe('CreateEventPage', () => {
     await user.click(screen.getByRole('button', { name: 'Create draft' }));
 
     expect(await screen.findByRole('heading', { name: 'My events' })).toBeInTheDocument();
-    expect(screen.getByText('Draft', { selector: '.badge' })).toBeInTheDocument();
+    // The heading renders before My events finishes loading, so wait for the list itself.
+    expect(await screen.findByText('Draft', { selector: '.badge' })).toBeInTheDocument();
     expect(body).toMatchObject({ name: 'Poetry Slam', venue: 'Library', capacity: 100 });
     expect(new Date(body?.startsAt as string).toISOString()).toBe(body?.startsAt);
   });
