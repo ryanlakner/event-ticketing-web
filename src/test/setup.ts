@@ -27,6 +27,9 @@ HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
   this.removeAttribute('open');
 };
 
+// jsdom doesn't scroll.
+window.scrollTo = () => {};
+
 // Any request without a handler fails the test, so no call can silently go unmocked.
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {

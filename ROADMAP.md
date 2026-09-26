@@ -55,8 +55,8 @@ Sizes: **S** is an evening, **M** is a few sessions, and **L** is worth splittin
 - [x] **Edit events** · `feat(events)` · S
   - _Done:_ organizers edit draft or published events from My events (`PUT /api/events/{id}`), through a form shared with event creation. Capacity can't go below the seats already reserved; that's checked before sending, and any conflict the API reports shows as an error. The original start time is kept unless the date is changed, so the minute-precision date input never drops seconds.
 
-- [ ] **Pagination and filters** · `feat(events)` · S
-  - _Done when:_ the events list and both "my" lists page through results using the API's `page`/`totalPages`, and the "my" lists filter by status.
+- [x] **Pagination and filters** · `feat(events)` · S
+  - _Done:_ the events list pages 9 at a time. My tickets and My events page 10 at a time and filter by status. Page and filter live in the URL (`?page=2&status=Confirmed`), so they survive a refresh and the back button, and the current page stays visible while the next loads. My events' stats ignore the filter.
 
 - [x] **Confirm before destructive actions** · `feat` · S
   - _Done:_ cancelling an event or a reservation asks first, in a native `<dialog>`. It's modal, closes on Escape, focuses the safe choice, and returns focus afterwards. Cancelling an event says how many reserved seats it affects; the API exposes seats reserved rather than a count of reservations.

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useApiClient } from './ApiClientContext';
 import { unwrap } from './client';
@@ -16,19 +16,33 @@ export const queryKeys = {
   events: ['events'] as const,
   eventList: (search: string, page: number) => ['events', 'list', { search, page }] as const,
   event: (id: string) => ['events', 'detail', id] as const,
-  myEvents: (status?: EventStatus) => ['me', 'events', { status }] as const,
-  myReservations: (status?: ReservationStatus) => ['me', 'reservations', { status }] as const,
+  myEvents: (status: EventStatus | undefined, page: number, pageSize: number) =>
+    ['me', 'events', { status, page, pageSize }] as const,
+  myReservations: (status: ReservationStatus | undefined, page: number) =>
+    ['me', 'reservations', { status, page }] as const,
   reservation: (id: string) => ['reservations', id] as const,
 };
+
+export const eventsPageSize = 9;
+export const myListPageSize = 10;
 
 export function useEvents(search: string, page = 1) {
   const api = useApiClient();
   return useQuery({
     queryKey: queryKeys.eventList(search, page),
+    // Keep showing the current page while the next one loads, instead of flashing skeletons.
+    placeholderData: keepPreviousData,
     queryFn: async (): Promise<PagedResult<EventDto>> =>
       unwrap(
         api.GET('/api/events', {
-          params: { query: { status: 'Published', search: search || undefined, page } },
+          params: {
+            query: {
+              status: 'Published',
+              search: search || undefined,
+              page,
+              pageSize: eventsPageSize,
+            },
+          },
         }),
       ),
   });
@@ -42,21 +56,27 @@ export function useEvent(id: string) {
   });
 }
 
-export function useMyEvents(status?: EventStatus) {
+export function useMyEvents(status?: EventStatus, page = 1, pageSize = myListPageSize) {
   const api = useApiClient();
   return useQuery({
-    queryKey: queryKeys.myEvents(status),
+    queryKey: queryKeys.myEvents(status, page, pageSize),
+    placeholderData: keepPreviousData,
     queryFn: async (): Promise<PagedResult<EventDto>> =>
-      unwrap(api.GET('/api/me/events', { params: { query: { status, pageSize: 100 } } })),
+      unwrap(api.GET('/api/me/events', { params: { query: { status, page, pageSize } } })),
   });
 }
 
-export function useMyReservations(status?: ReservationStatus) {
+export function useMyReservations(status?: ReservationStatus, page = 1) {
   const api = useApiClient();
   return useQuery({
-    queryKey: queryKeys.myReservations(status),
+    queryKey: queryKeys.myReservations(status, page),
+    placeholderData: keepPreviousData,
     queryFn: async (): Promise<PagedResult<ReservationDto>> =>
-      unwrap(api.GET('/api/me/reservations', { params: { query: { status, pageSize: 100 } } })),
+      unwrap(
+        api.GET('/api/me/reservations', {
+          params: { query: { status, page, pageSize: myListPageSize } },
+        }),
+      ),
   });
 }
 

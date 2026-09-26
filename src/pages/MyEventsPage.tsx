@@ -2,18 +2,21 @@ import { CalendarPlus, Pencil, Plus } from 'lucide-react';
 import { Link } from 'react-router';
 
 import { useCancelEvent, useMyEvents, usePublishEvent } from '../api/queries';
-import type { EventDto } from '../api/types';
+import type { EventDto, EventStatus } from '../api/types';
 import AvailabilityBar from '../components/AvailabilityBar';
 import DateBlock from '../components/DateBlock';
 import { ErrorMessage } from '../components/ErrorMessage';
+import Pagination from '../components/Pagination';
 import { ListSkeleton } from '../components/Skeletons';
 import StatusBadge from '../components/StatusBadge';
+import StatusFilter from '../components/StatusFilter';
 import Container from '../components/ui/Container';
 import EmptyState from '../components/ui/EmptyState';
 import PageHeader from '../components/ui/PageHeader';
 import { useConfirm } from '../components/confirm/ConfirmContext';
 import { useToast } from '../components/toast/ToastContext';
 import { formatWeekdayTime } from '../lib/format';
+import useListParams from '../lib/useListParams';
 import { buttonClass, cardClass } from '../lib/styles';
 
 function Stat({ label, value }: { label: string; value: number }) {
@@ -34,13 +37,18 @@ function summarize(events: EventDto[]) {
   };
 }
 
+const statuses: readonly EventStatus[] = ['Draft', 'Published', 'Cancelled'];
+
 export default function MyEventsPage() {
-  const events = useMyEvents();
+  const { page, status, setPage, setStatus } = useListParams(statuses);
+  const events = useMyEvents(status, page);
+  // Stats cover all of the organizer's events (up to 100), whatever the filter shows.
+  const allEvents = useMyEvents(undefined, 1, 100);
   const publish = usePublishEvent();
   const cancel = useCancelEvent();
   const toast = useToast();
   const confirm = useConfirm();
-  const stats = summarize(events.data?.items ?? []);
+  const stats = summarize(allEvents.data?.items ?? []);
 
   const onPublish = (event: EventDto) =>
     publish.mutate(event.id, {
@@ -80,7 +88,7 @@ export default function MyEventsPage() {
         title="My events"
       />
 
-      {events.data && events.data.items.length > 0 ? (
+      {allEvents.data && allEvents.data.items.length > 0 ? (
         <div className="mb-8 grid gap-4 sm:grid-cols-3">
           <Stat label="Live events" value={stats.live} />
           <Stat label="Drafts" value={stats.drafts} />
@@ -88,9 +96,17 @@ export default function MyEventsPage() {
         </div>
       ) : null}
 
+      {allEvents.data && allEvents.data.items.length > 0 ? (
+        <StatusFilter statuses={statuses} value={status} onChange={setStatus} />
+      ) : null}
       {events.isPending ? <ListSkeleton /> : null}
       {events.isError ? <ErrorMessage error={events.error} /> : null}
-      {events.data?.items.length === 0 ? (
+      {events.data?.items.length === 0 && status ? (
+        <EmptyState icon={CalendarPlus} title={`No ${status.toLowerCase()} events`}>
+          <p>Try another filter.</p>
+        </EmptyState>
+      ) : null}
+      {events.data?.items.length === 0 && !status ? (
         <EmptyState icon={CalendarPlus} title="You haven't created any events yet">
           <p>Start with a draft; publish it when you&apos;re ready to sell seats.</p>
         </EmptyState>
@@ -160,6 +176,13 @@ export default function MyEventsPage() {
           </li>
         ))}
       </ul>
+      {events.data ? (
+        <Pagination
+          page={events.data.page}
+          totalPages={events.data.totalPages}
+          onPageChange={setPage}
+        />
+      ) : null}
     </Container>
   );
 }
